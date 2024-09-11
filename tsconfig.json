@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2018",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+  },
+  "include": ["src/**/*.ts", "src/config/ormconfig.ts"],
+  "exclude": ["node_modules"]
+}
