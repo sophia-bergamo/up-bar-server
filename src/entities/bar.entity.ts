@@ -5,27 +5,27 @@ export class Bar {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 255 })
-  nome: string;
+  @Column()
+  name: string;
 
-  @Column({ length: 255 })
+  @Column()
   email: string;
 
-  @Column({ length: 255, nullable: true })
-  foto: string;
+  @Column({ nullable: true })
+  photo: string;
 
-  @Column({ length: 14 })
+  @Column()
   cnpj: string;
 
-  @Column({ length: 255 })
-  endereco: string;
+  @Column()
+  address: string;
 
   @Column({ nullable: true })
-  sobre: string;
+  about: string;
 
-  @Column({ length: 255 })
-  senha: string;
+  @Column()
+  password: string;
 
-  @Column({ length: 255, nullable: true })
-  link_cardapio: string;
+  @Column({ nullable: true })
+  menu_link: string;
 }

@@ -1,6 +1,7 @@
 import express from "express";
 import { AppDataSource } from "./config/data-source";
 import { CreateUserUseCase } from "./domain/create-user";
+import { CreateBarUseCase, upload } from "./domain/create-bar.use-case";
 
 const app = express();
 
@@ -19,6 +20,8 @@ AppDataSource.initialize()
   });
 
 app.post("/create-user", CreateUserUseCase.createUser);
+
+app.post("/create-bar", upload.single("photo"), CreateBarUseCase.createBar);
 
 const PORT = 3000;
 app.listen(PORT, () => {

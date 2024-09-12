@@ -3,6 +3,11 @@ import { AppDataSource } from "../config/data-source";
 import { User } from "../entities/user.entity";
 import bcrypt from "bcrypt";
 
+function validaEmail(email: string): boolean {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
 export class CreateUserUseCase {
   static async createUser(req: Request, res: Response) {
     const userRepository = AppDataSource.getRepository(User);
@@ -10,6 +15,10 @@ export class CreateUserUseCase {
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Preencha todos os campos!" });
+    }
+
+    if (!validaEmail(email)) {
+      return res.json({ message: "O formato do email está errado." });
     }
 
     const existingUser = await userRepository.findOneBy({ email });
@@ -34,7 +43,6 @@ export class CreateUserUseCase {
       password: hashedPassword,
     });
 
-    console.log(newUser);
     return res.json({
       message: "Usuário criado com sucesso!",
       user: newUser,
