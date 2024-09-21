@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
-import bcrypt from "bcrypt";
 import { Bar } from "../entities/bar.entity";
 import multer from "multer";
 import axios from "axios";
@@ -70,7 +69,6 @@ export class CreateBarUseCase {
 
     const newBar = await barRepository.save({
       ...req.body,
-      password: await bcrypt.hash(password, 10),
       photo: req.file ? req.file.filename : null,
     });
 
