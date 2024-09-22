@@ -1,31 +1,22 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
 import { Bar } from "../entities/bar.entity";
-import multer from "multer";
 import axios from "axios";
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-export const upload = multer({ storage: storage });
+import { bucket } from "../config/firebase-admin";
 
 async function validaCNPJ(cnpj: string): Promise<boolean> {
-  const cnpjLimpo = cnpj.replace(/[^\d]+/g, "");
-
   try {
     const response = await axios.get(
-      `https://www.receitaws.com.br/v1/cnpj/${cnpjLimpo}`
+      `https://www.receitaws.com.br/v1/cnpj/${cnpj}`
     );
 
-    return response.data.status === "OK";
+    if (response.data.status === "OK") {
+      return true;
+    } else {
+      return false;
+    }
   } catch (error) {
-    console.error("Erro ao validar o CNPJ:", error);
+    console.log(error);
     return false;
   }
 }
@@ -38,16 +29,15 @@ function validaEmail(email: string): boolean {
 export class CreateBarUseCase {
   static async createBar(req: Request, res: Response) {
     const barRepository = AppDataSource.getRepository(Bar);
-    const { name, email, password, cnpj, address, about } = req.body;
+    const { name, email, password, cnpj, address, about, barPhoto, menuLink } =
+      req.body;
 
     if (!name || !email || !password || !cnpj || !address || !about) {
-      return res
-        .status(400)
-        .json({ error: "Preencha os campos obrigatórios!" });
+      return res.status(400).json({ error: "Preencha todos os campos!" });
     }
 
     if (!validaEmail(email)) {
-      return res.json({ message: "O formato do email está errado." });
+      return res.status(400).json({ error: "O formato do email está errado." });
     }
 
     const existingBar = await barRepository.findOneBy({ email });
@@ -64,12 +54,40 @@ export class CreateBarUseCase {
 
     const isValidCNPJ = await validaCNPJ(cnpj);
     if (!isValidCNPJ) {
-      return res.status(400).json({ message: "CNPJ inválido!" });
+      return res.status(400).json({ error: "CNPJ inválido!" });
     }
 
+    const file = req.body.barPhoto;
+
+    if (!file.uri) {
+      return res.status(400).json({ error: "Por favor, adicione uma foto." });
+    }
+
+    const blob = bucket.file(Date.now() + "-" + req.body.barPhoto.name);
+    const writeStream = blob.createWriteStream({
+      metadata: {
+        contentType: file?.type,
+      },
+    });
+
+    writeStream.on("error", (err) => {
+      console.error(err);
+      return res.status(500).json({ error: "Erro ao fazer upload da imagem." });
+    });
+
+    writeStream.end(file.buffer);
+
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
     const newBar = await barRepository.save({
-      ...req.body,
-      photo: req.file ? req.file.filename : null,
+      name,
+      email,
+      password,
+      cnpj,
+      address,
+      about,
+      photo: publicUrl,
+      menu_link: menuLink,
     });
 
     return res.json({

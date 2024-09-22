@@ -16,7 +16,7 @@ export class LoginUseCase {
     const { email, password } = req.body;
 
     if (!validaEmail(email)) {
-      return res.json({ message: "O formato do email está errado." });
+      return res.status(400).json({ error: "O formato do email está errado." });
     }
 
     const existingBar = await barRepository.findOneBy({ email });
@@ -29,7 +29,7 @@ export class LoginUseCase {
         });
       } else {
         return res.status(401).json({
-          message: "Credenciais inválidas para o Bar.",
+          error: "Credenciais inválidas",
         });
       }
     }
@@ -44,7 +44,7 @@ export class LoginUseCase {
         });
       } else {
         return res.status(401).json({
-          message: "Credenciais inválidas para o Usuário.",
+          error: "Credenciais inválidas",
         });
       }
     }
