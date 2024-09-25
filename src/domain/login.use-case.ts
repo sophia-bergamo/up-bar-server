@@ -48,5 +48,9 @@ export class LoginUseCase {
         });
       }
     }
+
+    return res.status(401).json({
+      error: "Credenciais inválidas",
+    });
   }
 }
