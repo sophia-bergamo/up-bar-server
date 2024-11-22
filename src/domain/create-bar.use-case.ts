@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
 import { Bar } from "../entities/bar.entity";
 import axios from "axios";
-import { bucket } from "../config/firebase-admin";
 
 async function validaCNPJ(cnpj: string): Promise<boolean> {
   try {
@@ -52,32 +51,16 @@ export class CreateBarUseCase {
         .json({ error: "A senha deve conter pelo menos um dígito!" });
     }
 
-    const isValidCNPJ = await validaCNPJ(cnpj);
-    if (!isValidCNPJ) {
-      return res.status(400).json({ error: "CNPJ inválido!" });
-    }
+    // const isValidCNPJ = await validaCNPJ(cnpj);
+    // if (!isValidCNPJ) {
+    //   return res.status(400).json({ error: "CNPJ inválido!" });
+    // }
 
     const file = req.body.barPhoto;
 
     if (!file.uri) {
       return res.status(400).json({ error: "Por favor, adicione uma foto." });
     }
-
-    const blob = bucket.file(Date.now() + "-" + req.body.barPhoto.name);
-    const writeStream = blob.createWriteStream({
-      metadata: {
-        contentType: file?.type,
-      },
-    });
-
-    writeStream.on("error", (err) => {
-      console.error(err);
-      return res.status(500).json({ error: "Erro ao fazer upload da imagem." });
-    });
-
-    writeStream.end(file.buffer);
-
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
     const newBar = await barRepository.save({
       name,
@@ -86,7 +69,7 @@ export class CreateBarUseCase {
       cnpj,
       address,
       about,
-      photo: publicUrl,
+      photo: req.body.barPhoto.name,
       menu_link: menuLink,
     });
 

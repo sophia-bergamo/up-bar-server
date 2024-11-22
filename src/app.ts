@@ -7,6 +7,7 @@ import "reflect-metadata";
 import * as dotenv from "dotenv";
 import { ForgotPasswordUseCase } from "./domain/forgot-password.use-case";
 import { ResetPasswordUseCase } from "./domain/reset-password.use-case";
+import cors from "cors";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const app = express();
 app.use(express.json());
 
 app.get("/", (req: any, res: any) => {
-  res.send("Hello World");
+  res.send("Up bar server");
 });
 
 AppDataSource.initialize()
@@ -24,6 +25,8 @@ AppDataSource.initialize()
   .catch((err) => {
     console.error("Error during Data Source initialization:", err);
   });
+
+app.use(cors());
 
 app.post("/create-user", CreateUserUseCase.createUser);
 
